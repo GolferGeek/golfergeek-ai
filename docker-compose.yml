@@ -7,7 +7,7 @@ services:
       - ./:/workspace
     command: sh -c "cd apps/api && npm install && npm run dev"
     ports:
-      - "3000:3000"
+      - "3333:3000"
   web:
     image: node:18-alpine
     working_dir: /workspace

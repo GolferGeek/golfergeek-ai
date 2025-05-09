@@ -20,7 +20,7 @@ jobs:
 
       - name: Check API health
         run: |
-          response=$(curl -s http://localhost:3000/api/health)
+          response=$(curl -s http://localhost:3333/api/health)
           echo "API Response: $response"
           if [[ "$response" != *"\"status\":\"ok\""* ]]; then
             echo "Health check failed"
