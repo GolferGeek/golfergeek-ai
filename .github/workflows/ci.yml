@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Start test environment
+        run: |
+          docker compose up -d --build
+          echo "Waiting for services to start..."
+          sleep 15  # Give time for services to start
+
+      - name: Check API health
+        run: |
+          response=$(curl -s http://localhost:3000/api/health)
+          echo "API Response: $response"
+          if [[ "$response" != *"\"status\":\"ok\""* ]]; then
+            echo "Health check failed"
+            exit 1
+          fi
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop test environment
+        if: always()
+        run: docker compose down 
