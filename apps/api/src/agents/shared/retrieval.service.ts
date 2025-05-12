@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EmbeddingsService } from './embeddings.service';
-import { OpenAIService } from '../../services/openai.service';
-import * as esUtils from '../../utils/elasticsearch';
+import { OpenAIService } from '@api/services/openai.service';
+import * as esUtils from '@api/utils/elasticsearch';
 
 /**
  * Interface for search results
@@ -35,6 +35,7 @@ export class RetrievalService {
     filter: Record<string, any> = {},
     size: number = 3
   ): Promise<SearchResult[]> {
+    this.logger.log(`Finding relevant documents for query: ${query} (size: ${size})`);
     try {
       // Generate embeddings for the query
       const embeddings = await this.openaiService.generateEmbeddings(query);
@@ -42,17 +43,17 @@ export class RetrievalService {
       // Build the search query using the utility function
       const searchQuery = esUtils.buildVectorSearchQuery(query, embeddings, filter, size);
       
-      // Log the search request details
-      console.log('Elasticsearch search request to:', process.env.ES_URI);
+      // Log search request details (using Logger)
+      this.logger.debug(`ES search query: ${JSON.stringify(searchQuery).substring(0, 200)}...`);
       if (Object.keys(filter).length > 0) {
-        console.log('Applying filter:', JSON.stringify(filter));
+        this.logger.debug(`Applying filter: ${JSON.stringify(filter)}`);
       }
       
       // Perform the search
       const response = await esUtils.searchDocuments(searchQuery);
       
-      // Log search results
-      console.log('Search successful, found', response?.hits?.hits?.length || 0, 'results');
+      // Log search results (using Logger)
+      this.logger.debug(`Search successful, found ${response?.hits?.hits?.length || 0} results`);
       
       // Map the search results
       const results: SearchResult[] = (response?.hits?.hits || []).map((hit: any) => ({
@@ -63,11 +64,11 @@ export class RetrievalService {
         metadata: hit._source.metadata
       }));
       
-      console.log('Mapped documents:', results.length);
+      this.logger.debug(`Mapped ${results.length} documents.`);
       
       return results;
     } catch (error) {
-      this.logger.error(`Error searching for documents: ${error}`);
+      this.logger.error(`Error searching for documents: ${error instanceof Error ? error.message : String(error)}`);
       return [];
     }
   }
