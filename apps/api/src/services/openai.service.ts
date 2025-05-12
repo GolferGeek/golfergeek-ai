@@ -1,17 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-import * as dotenv from 'dotenv';
 
 @Injectable()
 export class OpenAIService {
   private readonly openai: OpenAI;
   private readonly logger = new Logger(OpenAIService.name);
 
-  constructor() {
-    // Ensure environment variables are loaded
-    dotenv.config();
-    
-    const apiKey = process.env.OPENAI_API_KEY;
+  constructor(private readonly configService: ConfigService) {
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
     if (!apiKey) {
       this.logger.error('OPENAI_API_KEY is not set in environment variables');
       throw new Error('OPENAI_API_KEY is required');
