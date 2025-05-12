@@ -1,15 +1,27 @@
 {
   "name": "golfergeek-ai",
   "private": true,
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "dev:api": "turbo run dev --filter=api",
     "dev:web": "turbo run dev --filter=web",
-    "start": "turbo run start"
+    "start": "turbo run start",
+    "test:a2a": "turbo run test:a2a --filter=api",
+    "test:a2a:routing": "turbo run test:a2a:routing --filter=api"
   },
   "devDependencies": {
-    "turbo": "^1.11.3"
+    "turbo": "^1.13.4"
+  },
+  "dependencies": {
+    "@nestjs/axios": "^4.0.0",
+    "@types/uuid": "^10.0.0",
+    "axios": "^1.9.0",
+    "dotenv": "^16.5.0",
+    "openai": "^4.98.0",
+    "uuid": "^11.1.0"
   }
-} 
+}

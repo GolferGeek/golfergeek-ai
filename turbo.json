@@ -10,6 +10,12 @@
     },
     "start": {
       "cache": false
+    },
+    "test:a2a": {
+      "cache": false
+    },
+    "test:a2a:routing": {
+      "cache": false
     }
   }
 } 
