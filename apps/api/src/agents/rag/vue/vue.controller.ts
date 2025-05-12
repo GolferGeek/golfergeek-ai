@@ -1,6 +1,9 @@
 import { Controller, Get, Query, Post, Body, Logger } from '@nestjs/common';
 import { VueRagService } from './vue.service';
-import { SearchResult } from '../../shared/retrieval.service';
+import { SearchResult } from '@api/agents/shared/retrieval.service';
+import { SearchVueDocsQueryDto } from './dto/search-vue-docs.query.dto';
+import { AskVueQuestionQueryDto } from './dto/ask-vue-question.query.dto';
+import { AskVueQuestionBodyDto } from './dto/ask-vue-question.body.dto';
 
 /**
  * Controller for Vue.js RAG API endpoints
@@ -29,17 +32,10 @@ export class VueRagController {
    */
   @Get('search')
   async searchVueDocuments(
-    @Query('query') query: string,
-    @Query('maxResults') maxResults?: number
+    @Query() queryDto: SearchVueDocsQueryDto
   ): Promise<SearchResult[]> {
-    this.logger.log(`Searching for Vue documents with query: ${query}`);
-    
-    if (!query) {
-      this.logger.warn('Search query was empty');
-      return [];
-    }
-    
-    return this.vueRagService.findVueDocuments(query, maxResults ? parseInt(String(maxResults), 10) : 3);
+    this.logger.log(`Searching for Vue documents with query: ${queryDto.query}`);
+    return this.vueRagService.findVueDocuments(queryDto.query, queryDto.maxResults);
   }
 
   /**
@@ -49,15 +45,9 @@ export class VueRagController {
    * @returns Answer with context
    */
   @Get('ask')
-  async askVueQuestion(@Query('question') question: string): Promise<{ answer: string }> {
-    this.logger.log(`Answering Vue question: ${question}`);
-    
-    if (!question) {
-      this.logger.warn('Question was empty');
-      return { answer: 'Please provide a question about Vue.js.' };
-    }
-    
-    const answer = await this.vueRagService.answerVueQuestion(question);
+  async askVueQuestion(@Query() queryDto: AskVueQuestionQueryDto): Promise<{ answer: string }> {
+    this.logger.log(`Answering Vue question: ${queryDto.question}`);
+    const answer = await this.vueRagService.answerVueQuestion(queryDto.question);
     return { answer };
   }
 
@@ -66,15 +56,9 @@ export class VueRagController {
    * Useful for longer queries
    */
   @Post('ask')
-  async askVueQuestionPost(@Body() body: { question: string }): Promise<{ answer: string }> {
-    this.logger.log(`Answering Vue question (POST): ${body.question}`);
-    
-    if (!body.question) {
-      this.logger.warn('Question was empty in POST body');
-      return { answer: 'Please provide a question about Vue.js in the request body.' };
-    }
-    
-    const answer = await this.vueRagService.answerVueQuestion(body.question);
+  async askVueQuestionPost(@Body() bodyDto: AskVueQuestionBodyDto): Promise<{ answer: string }> {
+    this.logger.log(`Answering Vue question (POST): ${bodyDto.question}`);
+    const answer = await this.vueRagService.answerVueQuestion(bodyDto.question);
     return { answer };
   }
 } 
