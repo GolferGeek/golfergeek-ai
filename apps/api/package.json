@@ -8,7 +8,8 @@
     "start": "node dist/main.js",
     "test:a2a": "ts-node src/test/a2a-test.ts",
     "test:a2a:routing": "ts-node src/test/a2a-agent-routing-test.ts",
-    "test:a2a:llm-routing": "ts-node src/test/a2a-llm-routing-test.ts"
+    "test:a2a:llm-routing": "ts-node src/test/a2a-llm-routing-test.ts",
+    "test": "jest"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",
