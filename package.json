@@ -2,7 +2,8 @@
   "name": "golfergeek-ai",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "libs/*"
   ],
   "scripts": {
     "build": "turbo run build",

@@ -5,7 +5,7 @@
 
 // Note: We're using a simple fetch-based approach rather than a full client
 // For production, you might want to use the official Elasticsearch client
-import { Collections } from '../schemas/mongodb';
+// import { Collections } from '../schemas/mongodb'; // This will be an issue, needs to be from @api or passed in
 import axios from 'axios';
 
 // Vector dimensions for OpenAI embeddings
@@ -94,7 +94,7 @@ export async function storeVector(
     })
   });
   
-  const result = await response.json();
+  const result: any = await response.json();
   return result._id;
 }
 
@@ -197,7 +197,7 @@ export async function vectorSearch(
             }
           }
         ],
-        filter: []
+        filter: [] as any[]
       }
     };
     
@@ -237,7 +237,7 @@ export async function vectorSearch(
       return [];
     }
     
-    const result = await response.json();
+    const result: any = await response.json();
     console.log(`Search successful, found ${result.hits?.hits?.length || 0} results`);
     
     if (!result.hits || !result.hits.hits) {
@@ -251,39 +251,25 @@ export async function vectorSearch(
       console.log('First hit _id:', result.hits.hits[0]._id);
     }
     
-    // Ensure all returned documents have the required structure
-    // Adapting the document structure to match what's expected
     const mappedResults = result.hits.hits.map((hit: any) => {
-      // Check what fields are available
+      // Log the structure of each hit._source
       console.log('Available fields in hit._source:', Object.keys(hit._source).join(', '));
-      
-      // If the document has a vector field, it's likely from our Elasticsearch index
-      const isFromElasticsearch = hit._source.hasOwnProperty('vector');
-      
+
       return {
-        // Ensure we have an id
-        id: hit._source.docId || hit._id,
-        _id: hit._source.docId || hit._id,
-        // Ensure we have content - this is critical for the filtering
-        content: typeof hit._source.content === 'string' 
-          ? hit._source.content 
-          : JSON.stringify(hit._source),
-        // Ensure we have metadata
-        metadata: hit._source.metadata || {
-          title: hit._source.title || 'Untitled Document',
-          fileType: hit._source.fileType || 'unknown'
-        },
-        score: hit._score
+        id: hit._id,
+        score: hit._score,
+        docId: hit._source.docId, // Assuming docId is directly available
+        content: hit._source.content,
+        metadata: hit._source.metadata
       };
     });
-    
-    console.log('Mapped documents:', mappedResults.length);
-    // Log the first mapped document for verification
-    if (mappedResults.length > 0) {
+
+    if(mappedResults.length > 0){
+      console.log('Mapped documents:', mappedResults.length);
       console.log('First mapped document:', JSON.stringify(mappedResults[0], null, 2));
     }
-    
     return mappedResults;
+
   } catch (error) {
     console.error('Error with Elasticsearch request:', error instanceof Error ? error.message : String(error));
     console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
@@ -292,8 +278,8 @@ export async function vectorSearch(
 }
 
 /**
- * Delete a vector by document ID
- * @param docId The document ID to delete
+ * Delete a document vector from Elasticsearch
+ * @param docId MongoDB document ID to delete
  */
 export async function deleteVector(docId: string) {
   const ES_URI = process.env.ES_URI;
@@ -302,40 +288,33 @@ export async function deleteVector(docId: string) {
     console.error('Elasticsearch URI is not defined. Please check your environment variables.');
     return;
   }
-
+  
   try {
     await fetch(`${ES_URI}/${DOC_INDEX}/_doc/${docId}`, {
       method: 'DELETE',
-      headers: getHeaders()
+      headers: getHeaders(),
     });
     console.log(`Deleted vector for document: ${docId}`);
   } catch (error) {
-    console.error(`Error deleting vector for document ${docId}:`, 
-      error instanceof Error ? error.message : String(error));
+    console.error(`Error deleting vector for document ${docId}:`,
+                  error instanceof Error ? error.message : String(error));
   }
 }
 
 /**
- * Generate headers for Elasticsearch requests
- * Handles API key authentication if provided
+ * Helper to get headers with optional API key authentication
+ * @returns Headers object
  */
-function getHeaders() {
-  const ES_API_KEY = process.env.ES_API_KEY;
-  
-  const headers: HeadersInit = {
+function getHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json'
   };
   
+  const ES_API_KEY = process.env.ES_API_KEY;
+  
   if (ES_API_KEY) {
-    // Elasticsearch Cloud uses the format: "ApiKey <key>"
-    // Check if the key already has "ApiKey" prefix
-    if (ES_API_KEY.trim().startsWith('ApiKey ')) {
-      headers['Authorization'] = ES_API_KEY.trim();
-    } else {
-      headers['Authorization'] = `ApiKey ${ES_API_KEY.trim()}`;
-    }
-    
     console.log('Using ES API key for authentication');
+    headers['Authorization'] = `ApiKey ${ES_API_KEY}`;
   } else {
     console.log('No ES API key provided');
   }
@@ -343,41 +322,46 @@ function getHeaders() {
   return headers;
 }
 
+
 /**
- * Perform a search with the given query body
+ * Generic search function for Elasticsearch
+ * @param queryBody The full query body to send to Elasticsearch
+ * @returns The raw Elasticsearch response
  */
 export async function searchDocuments(queryBody: any): Promise<any> {
-  const client = getEsClient();
-  
   try {
-    // Log more details about the request
+    const url = `${process.env.ES_URI}/${DOC_INDEX}/_search`;
     console.log(`Making request to: ${process.env.ES_URI}/documents/_search`);
     console.log(`Request body (truncated): ${JSON.stringify(queryBody).substring(0, 200)}...`);
-
-    const response = await client.post('/documents/_search', queryBody);
+    const response = await axios.post(url, queryBody, {
+      headers: getHeaders(),
+    });
     return response.data;
   } catch (error) {
     console.error('Error searching documents:', error);
-    return { hits: { hits: [] } };
+    throw error;
   }
 }
 
 /**
- * Get an axios client configured for Elasticsearch
+ * Get an instance of the Elasticsearch client (using axios for now)
+ * This is a placeholder for a more robust client setup if needed
  */
 export function getEsClient() {
   const esUri = process.env.ES_URI;
   const esApiKey = process.env.ES_API_KEY;
-
-  if (!esUri || !esApiKey) {
-    throw new Error('Missing Elasticsearch configuration');
+  if (!esUri) {
+    throw new Error('Elasticsearch URI (ES_URI) is not defined in environment variables.');
   }
 
-  return axios.create({
-    baseURL: esUri,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `ApiKey ${esApiKey}`
-    }
-  });
+  return {
+    search: async (params: { index: string; body: any }) => {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (esApiKey) {
+        headers['Authorization'] = `ApiKey ${esApiKey}`;
+      }
+      return axios.post(`${esUri}/${params.index}/_search`, params.body, { headers });
+    },
+    // Add other client methods as needed (e.g., index, delete, update)
+  };
 } 

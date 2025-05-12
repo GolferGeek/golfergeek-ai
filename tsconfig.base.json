@@ -12,7 +12,9 @@
     "paths": {
       "@api/*": ["apps/api/src/*"],
       "@web/*": ["apps/web/*"],
-      "@shared/*": ["libs/shared/src/*"]
+      "@shared/*": ["libs/shared/src/*"],
+      "@libs/shared": ["libs/shared/src/index.ts"],
+      "@libs/shared/*": ["libs/shared/src/*"]
     }
   }
 } 

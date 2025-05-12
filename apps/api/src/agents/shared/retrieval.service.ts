@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EmbeddingsService } from './embeddings.service';
 import { OpenAIService } from '@api/services/openai.service';
-import * as esUtils from '@api/utils/elasticsearch';
+import * as esUtils from '@libs/shared/elasticsearch';
 
 /**
  * Interface for search results

@@ -1,3 +1,5 @@
+// Existing mongodb utilities 
+
 /**
  * MongoDB connection utility for the GolferGeek AI application
  */
