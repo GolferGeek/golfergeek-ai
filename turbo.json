@@ -16,6 +16,7 @@
     },
     "test:a2a:routing": {
       "cache": false
-    }
+    },
+    "lint": { "outputs": [] }
   }
 } 

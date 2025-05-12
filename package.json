@@ -11,13 +11,22 @@
     "dev:web": "turbo run dev --filter=web",
     "start": "turbo run start",
     "test:a2a": "turbo run test:a2a --filter=api",
-    "test:a2a:routing": "turbo run test:a2a:routing --filter=api"
+    "test:a2a:routing": "turbo run test:a2a:routing --filter=api",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\""
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
     "ts-jest": "^29.3.2",
-    "turbo": "^1.13.4"
+    "turbo": "^1.13.4",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "prettier": "^3.2.5",
+    "eslint-plugin-import": "^2.29.0"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.0",
