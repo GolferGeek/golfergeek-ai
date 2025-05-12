@@ -9,7 +9,9 @@
     "test:a2a": "ts-node src/test/a2a-test.ts",
     "test:a2a:routing": "ts-node src/test/a2a-agent-routing-test.ts",
     "test:a2a:llm-routing": "ts-node src/test/a2a-llm-routing-test.ts",
-    "test": "jest"
+    "test": "jest --config jest.unit.config.js",
+    "test:unit": "jest --config jest.unit.config.js",
+    "test:e2e": "jest --config jest.e2e.config.js"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",

@@ -12,6 +12,8 @@
     "start": "turbo run start",
     "test:a2a": "turbo run test:a2a --filter=api",
     "test:a2a:routing": "turbo run test:a2a:routing --filter=api",
+    "test:unit": "turbo run test:unit --filter=api",
+    "test:e2e": "turbo run test:e2e --filter=api",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"**/*.{ts,js,json,md}\""
   },
